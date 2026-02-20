@@ -1,65 +1,46 @@
 "use client";
 
-import { useSelector, useDispatch } from "react-redux";
-import {
-  selectCartItems,
-  selectCartTotal,
-} from "@/features/cart/cartSelectors";
-import {
-  removeFromCart,
-  increaseQuantity,
-  decreaseQuantity,
-  clearCart,
-} from "@/features/cart/cartSlice";
+import { useAppSelector } from "@/redux/hooks";
+import Container from "@/components/layout/Container";
 
 export default function CartPage() {
-  const items = useSelector(selectCartItems);
-  const total = useSelector(selectCartTotal);
-  const dispatch = useDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
 
-  if (items.length === 0)
-    return <div className="p-6">Your cart is empty.</div>;
+  const total = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      {items.map((item) => (
+    <Container>
+      <h1 className="text-3xl font-bold py-10">Shopping Cart</h1>
+
+      {cartItems.length === 0 && <p>Your cart is empty</p>}
+
+      {cartItems.map((item, index) => (
         <div
-          key={item.productId}
-          className="flex justify-between items-center border-b py-4"
+          key={index}
+          className="flex items-center justify-between border-b py-6"
         >
-          <div>
-            <h2>{item.title}</h2>
-            <p>${item.price}</p>
-            <div className="flex gap-2 mt-2">
-              <button onClick={() => dispatch(decreaseQuantity(item.productId))}>
-                -
-              </button>
-              <span>{item.quantity}</span>
-              <button onClick={() => dispatch(increaseQuantity(item.productId))}>
-                +
-              </button>
+          <div className="flex gap-6 items-center">
+            <img src={item.image} className="w-24 h-24 object-cover rounded" />
+            <div>
+              <h3 className="font-semibold">{item.title}</h3>
+              <p>Color: {item.color}</p>
+              <p>Size: {item.size}</p>
+              <p>Qty: {item.quantity}</p>
             </div>
           </div>
 
-          <button
-            onClick={() => dispatch(removeFromCart(item.productId))}
-            className="text-red-500"
-          >
-            Remove
-          </button>
+          <p className="font-semibold">${item.price * item.quantity}</p>
         </div>
       ))}
 
-      <div className="mt-6 font-bold text-xl">
-        Total: ${total?.toFixed(2)}
-      </div>
-
-      <button
-        onClick={() => dispatch(clearCart())}
-        className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
-      >
-        Clear Cart
-      </button>
-    </div>
+      {cartItems.length > 0 && (
+        <div className="text-right mt-10 text-2xl font-bold">
+          Total: ${total}
+        </div>
+      )}
+    </Container>
   );
 }
